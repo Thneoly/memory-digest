@@ -1,0 +1,16 @@
+{
+  "agent": {
+    "profile": "read-only"
+  },
+  "capabilities": [
+    "storage",
+    "octos.turn.start"
+  ],
+  "id": "memory-digest",
+  "integrity": {
+    "bundle_blake3": "1d6f052f7a62d78d06268511ef7ffd0172dcbbe753cbe6104f3520507e5102cf"
+  },
+  "name": "Memory Digest",
+  "schema": 1,
+  "version": "0.1.0"
+}

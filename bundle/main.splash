@@ -1,0 +1,100 @@
+let prefs = []
+
+fn load(){
+    if fs.exists("prefs.json") {
+        let v = fs.read("prefs.json").parse_json()
+        if v != nil { prefs = v }
+    }
+    ui.chips.render()
+}
+
+fn save(){ fs.write("prefs.json", prefs.to_json()) }
+
+fn local_digest(){
+    if prefs.len() == 0 { return "Add your interests below, or connect an assistant and press Refresh." }
+    let out = "You like: "
+    for i in prefs.len() {
+        out = out + prefs[i]
+        if i < prefs.len() - 1 { out = out + ", " }
+    }
+    out = out + "."
+    return out
+}
+
+fn show_local(reason){
+    ui.digest.set_text(local_digest())
+    ui.source.set_text(reason)
+}
+
+fn refresh(){
+    ui.source.set_text("Asking the assistant…")
+    host.request("octos.turn.start", {text: "In one short paragraph, summarize what you remember about my interests and preferences."}, fn(r){
+        if r.is_ok {
+            ui.digest.set_text("" + r.data.text)
+            ui.source.set_text("From your assistant")
+        } else {
+            show_local("No assistant on this device — from your local interests")
+        }
+    })
+}
+
+fn add_pref(){
+    let text = ui.entry.text()
+    if text == "" { return }
+    prefs.push(text)
+    ui.entry.set_text("")
+    save()
+    ui.chips.render()
+    if ui.source.text() == "No assistant on this device — from your local interests" {
+        ui.digest.set_text(local_digest())
+    }
+}
+
+fn remove_pref(i){
+    let kept = []
+    for j in prefs.len() { if j != i { kept.push(prefs[j]) } }
+    prefs = kept
+    save()
+    ui.chips.render()
+    if ui.source.text() == "No assistant on this device — from your local interests" {
+        ui.digest.set_text(local_digest())
+    }
+}
+
+start_timeout(0.05, || { load() refresh() })
+
+let ink = #x1c1c1e
+let secondary = #x8e8e93
+let blue = #x007aff
+SolidView{width: Fill height: Fill flow: Down padding: 16 spacing: 12 draw_bg.color: #xffffff
+    Label{text: "Memory Digest" draw_text.color: ink draw_text.text_style: theme.font_bold{font_size: 28}}
+    RoundedView{width: Fill height: Fit flow: Down spacing: 8 padding: 16 draw_bg.color: #xf2f2f7 border_radius: 14.0
+        Label{text: "YOUR DIGEST" draw_text.color: secondary draw_text.text_style.font_size: 11}
+        digest := Label{width: Fill text: "" draw_text.color: ink draw_text.text_style.font_size: 16}
+        source := Label{width: Fill text: "" draw_text.color: secondary draw_text.text_style.font_size: 11}
+        ButtonFlat{text: "Refresh from the assistant" height: 36 padding: Inset{left: 14 right: 14} on_click: || refresh()
+            draw_bg +: {border_radius: 18.0 color: blue color_hover: #x0a84ff color_down: #x0062cc border_size: 0.0}
+            draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}}
+    }
+    Label{text: "YOUR INTERESTS" draw_text.color: secondary draw_text.text_style.font_size: 11}
+    View{width: Fill height: Fit flow: Right spacing: 8 align: Align{y: 0.5}
+        entry := TextInput{width: Fill height: 40 empty_text: "Add an interest"
+            draw_bg +: {color: #xf2f2f7 color_hover: #xf2f2f7 color_focus: #xf2f2f7 color_empty: #xf2f2f7 border_radius: 10.0}
+            draw_text +: {color: ink color_hover: ink color_focus: ink color_empty: secondary color_empty_hover: secondary}}
+        ButtonFlat{text: "Add" height: 40 padding: Inset{left: 18 right: 18} on_click: || add_pref()
+            draw_bg +: {border_radius: 20.0 color: blue color_hover: #x0a84ff color_down: #x0062cc border_size: 0.0}
+            draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}}
+    }
+    chips := ScrollYView{width: Fill height: Fill flow: Down spacing: 8 on_render: || {
+        if prefs.len() == 0 {
+            Label{text: "No interests yet." draw_text.color: secondary}
+        }
+        for i in prefs.len() {
+            GestureView{width: Fill height: Fit padding: 10 on_tap: |x, y| remove_pref(i)
+                Label{width: Fill text: prefs[i] draw_text.color: ink draw_text.text_style.font_size: 15}
+            }
+            Hr{}
+        }
+    }}
+    Label{text: "Tap an interest to remove it. Refresh personalizes from this app's assistant." draw_text.color: secondary draw_text.text_style.font_size: 12}
+}
