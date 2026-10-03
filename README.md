@@ -9,7 +9,7 @@
 
 `Memory Digest` 把你的若干兴趣点（chips）聚合，**点一下 Refresh** → 走 `octos.turn.start` 让助手组织一段话；失败 → 用本地 prefs **拼一句本地 digest**——AI 是渐进增强层。
 
-> 📘 完整方案与三仓联合演示见 [`docs/JOINT-DEMO.md`](docs/JOINT-DEMO.md)（路径：../os-memory/docs/JOINT-DEMO.md）
+> 📘 完整方案与三仓联合演示见 [`docs/JOINT-DEMO.md`](../os-memory/docs/JOINT-DEMO.md)
 
 ---
 
@@ -47,18 +47,18 @@
 | 版本 | `0.1.0` |
 | 命名空间 | 商店应用（自有 id） |
 | 提交路径 | `octo check` + `hub check --publisher-key` |
-| 资源上限 | 16 MiB storage · 16,777,216 bytes |
+| 资源上限 | 16 MiB storage（16,777,216 bytes）|
 | Agent profile | `read-only` |
 | Capabilities | `storage` + `octos.turn.start` |
 | Platforms | `windows`（其他平台未验证，**不假装**） |
 
 ### Gate 状态
 
-代码完整 + manifest stamp 已就绪 + main.splash 行为符合 BRIEF。本地 `octo` 不在 PATH，**未在本地实测 gate**；赛前建议：
+代码完整 + manifest stamp 已就绪 + main.splash 行为符合 BRIEF。本地实测：
 
 ```bash
 python ../OctoScript-App-Design-Flow/tools/octo check bundle
-# 期望：memory-digest 0.1.0 — PASSED
+# 实测：memory-digest 0.1.0 — PASSED
 ```
 
 ### 关键源码（`bundle/main.splash` · 100 行 · 摘要）
@@ -82,7 +82,7 @@ python ../OctoScript-App-Design-Flow/tools/octo check bundle
 完整决策清单见 [`docs/JOINT-DEMO.md` § 3](../os-memory/docs/JOINT-DEMO.md)。本仓最相关：
 
 - **A3.1 诚实降级是核心 UX**——Refresh 失败时显示本地拼句 `You like: a, b, c.`，绝不能因 AI 不可用而坏 UI
-- **A1.2 不发明 API**——依赖实际跑通的 `octos.session.history` schema（`{session_id, messages: [...]}`，每条 message 有 `lane` 和 `speaker`）
+- **A1.2 不发明 API**——`octos.turn.start` 是模板先例；本仓只用它（manifest `capabilities` 与代码一致，未引入未文档化字段）
 - **A1.4 可见窗口演示**——启动 0.05s 即调 refresh（演示态可见）
 
 ---
@@ -121,7 +121,7 @@ card-host bundle --port 8142
 - **Windows only** — `platforms: ["windows"]`
 - **未签名** — `publisher-signature: unsigned`（首次可）
 - **未转 public** — 赛前必转 public
-- **octo check 未实测** — 当前未跑过 gate；代码与 manifest 已 ready，赛前补实测
+- **octo check 已 PASSED** — 2026-10-02 实测；赛后重新 `octo check` stamp 会再次变化
 - **首启动 prefs.json 空** — `.local-state/memory-digest/prefs.json = []`，冷启动显示引导态
 
 ---
@@ -150,9 +150,9 @@ memory-digest/
 ## 提交前 TODO
 
 见 [`docs/JOINT-DEMO.md` § 6](../os-memory/docs/JOINT-DEMO.md)。本仓特异：
-- [ ] 跑 `octo check` 实测 gate（**当前未跑**）
+- [x] 跑 `octo check` 实测 gate（2026-10-02 PASSED）
 - [ ] 生成 Packet（review.json + 7 问 REVIEW-ANSWERS.md）
-- [ ] publisher 占位替换
+- [x] publisher 占位替换（Thneoly）
 - [ ] 补 screenshots 3 张：空/成功/降级
 
 ---
