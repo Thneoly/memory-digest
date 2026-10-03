@@ -15,10 +15,10 @@
   },
   "id": "memory-digest",
   "integrity": {
-    "bundle_blake3": "e4afbd17be6af00a89e1652de4c827db6dcb134257ece24dbb44d2c980cf3253",
+    "bundle_blake3": "07e200d9a1f9944090f2d9d2d63dbd062e98065e863c6b76dfaf8ee32991ced4",
     "signature": {
       "key_id": "TheOne",
-      "value": "9d8005038c07e860cc2f92d03f3441baabcaa2a167bb7b0690c5469b2bdc02568e5dea8c89b7a288d7997fb3f8302ef933861e8b4d463218237dba9772f95c08"
+      "value": "9a2930479416dda46fd0128e4ed5a2e49ccab942e0a245b6f4788523b1d1e2a9030a01169c5f539cb0a1ee4efa399a2cfe0d1c6378b41c1c50472dbdf6e0650b"
     }
   },
   "name": "Memory Digest",

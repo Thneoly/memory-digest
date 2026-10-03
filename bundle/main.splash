@@ -65,35 +65,48 @@ start_timeout(0.05, || { load() refresh() })
 
 let ink = #x1c1c1e
 let secondary = #x8e8e93
-let blue = #x007aff
-SolidView{width: Fill height: Fill flow: Down padding: 16 spacing: 12 draw_bg.color: #xffffff
-    Label{text: "Memory Digest" draw_text.color: ink draw_text.text_style: theme.font_bold{font_size: 28}}
-    RoundedView{width: Fill height: Fit flow: Down spacing: 8 padding: 16 draw_bg.color: #xf2f2f7 border_radius: 14.0
-        Label{text: "YOUR DIGEST" draw_text.color: secondary draw_text.text_style.font_size: 11}
-        digest := Label{width: Fill text: "" draw_text.color: ink draw_text.text_style.font_size: 16}
-        source := Label{width: Fill text: "" draw_text.color: secondary draw_text.text_style.font_size: 11}
-        ButtonFlat{text: "Refresh from the assistant" height: 36 padding: Inset{left: 14 right: 14} on_click: || refresh()
-            draw_bg +: {border_radius: 18.0 color: blue color_hover: #x0a84ff color_down: #x0062cc border_size: 0.0}
-            draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}}
+let accent = #x0d8a8a
+let accent_dark = #x086868
+let accent_bg = #xd9f1ef
+let bg = #xf5fafa
+SolidView{width: Fill height: Fill flow: Down padding: 16 spacing: 12 draw_bg.color: bg
+    View{width: Fill height: Fit flow: Down spacing: 2
+        Label{text: "✨  Memory Digest" draw_text.color: ink draw_text.text_style: theme.font_bold{font_size: 26}}
+        Label{text: "Your interests, summarized by your assistant." draw_text.color: secondary draw_text.text_style.font_size: 13}
     }
-    Label{text: "YOUR INTERESTS" draw_text.color: secondary draw_text.text_style.font_size: 11}
+    RoundedView{width: Fill height: Fit flow: Down spacing: 10 padding: Inset{top: 18 bottom: 18 left: 18 right: 18} draw_bg.color: accent_bg border_radius: 16.0
+        Label{text: "YOUR DIGEST" draw_text.color: accent_dark draw_text.text_style.font_size: 10}
+        digest := Label{width: Fill text: "" draw_text.color: ink draw_text.text_style.font_size: 16}
+        View{width: Fill height: Fit flow: Right spacing: 8 align: Align{y: 0.5}
+            source := Label{width: Fill text: "" draw_text.color: accent_dark draw_text.text_style.font_size: 11}
+            ButtonFlat{text: "↻ Refresh" height: 36 padding: Inset{left: 14 right: 14} on_click: || refresh()
+                draw_bg +: {border_radius: 18.0 color: accent color_hover: accent_dark color_down: #x054848 border_size: 0.0}
+                draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}}
+        }
+    }
+    Label{text: "YOUR INTERESTS" draw_text.color: secondary draw_text.text_style.font_size: 10}
     View{width: Fill height: Fit flow: Right spacing: 8 align: Align{y: 0.5}
-        entry := TextInput{width: Fill height: 40 empty_text: "Add an interest"
-            draw_bg +: {color: #xf2f2f7 color_hover: #xf2f2f7 color_focus: #xf2f2f7 color_empty: #xf2f2f7 border_radius: 10.0}
+        entry := TextInput{width: Fill height: 44 empty_text: "Add an interest"
+            draw_bg +: {color: #xffffff color_hover: #xffffff color_focus: accent_bg color_empty: #xffffff border_radius: 12.0}
             draw_text +: {color: ink color_hover: ink color_focus: ink color_empty: secondary color_empty_hover: secondary}}
-        ButtonFlat{text: "Add" height: 40 padding: Inset{left: 18 right: 18} on_click: || add_pref()
-            draw_bg +: {border_radius: 20.0 color: blue color_hover: #x0a84ff color_down: #x0062cc border_size: 0.0}
+        ButtonFlat{text: "Add" height: 44 padding: Inset{left: 20 right: 20} on_click: || add_pref()
+            draw_bg +: {border_radius: 22.0 color: accent color_hover: accent_dark color_down: #x054848 border_size: 0.0}
             draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}}
     }
     chips := ScrollYView{width: Fill height: Fill flow: Down spacing: 8 on_render: || {
         if prefs.len() == 0 {
-            Label{text: "No interests yet." draw_text.color: secondary}
+            SolidView{width: Fill height: Fit flow: Down padding: Inset{top: 22 bottom: 22 left: 18 right: 18} align: Align{x: 0.5 y: 0.5} draw_bg.color: #xffffff
+                Label{text: "No interests yet" draw_text.color: secondary draw_text.text_style.font_size: 14}
+                Label{text: "Type above and tap Add to seed your digest." draw_text.color: secondary draw_text.text_style.font_size: 11}
+            }
         }
         for i in prefs.len() {
-            GestureView{width: Fill height: Fit padding: 10 on_tap: |x, y| remove_pref(i)
-                Label{width: Fill text: prefs[i] draw_text.color: ink draw_text.text_style.font_size: 15}
+            GestureView{width: Fill height: Fit on_tap: |x, y| remove_pref(i)
+                SolidView{width: Fill height: Fit flow: Right spacing: 6 align: Align{y: 0.5} padding: Inset{top: 10 bottom: 10 left: 14 right: 12} draw_bg.color: accent_bg
+                    Label{width: Fill text: prefs[i] draw_text.color: accent_dark draw_text.text_style.font_size: 14}
+                    Label{text: "×" draw_text.color: accent_dark draw_text.text_style.font_size: 15}
+                }
             }
-            Hr{}
         }
     }}
     Label{text: "Tap an interest to remove it. Refresh personalizes from this app's assistant." draw_text.color: secondary draw_text.text_style.font_size: 12}
