@@ -3,6 +3,8 @@
 > **OctoSense 黑客松参赛项目 · 商店应用赛道**
 > 演示"让助手用你自己的兴趣点组织一段 digest"的交互模型。
 
+> ℹ️ **本仓库是被动 bundle**——`bundle/main.splash` 是纯脚本 + 数据；不安装 hook / 不触发浏览器跳转 / 不发起任何 HTTP 调用。你看到 `vscode.dev/github/...` 这类链接是被你本地 IDE / GitHub 扩展 / 浏览器插件打开的，不是本仓库干的。
+
 ---
 
 ## 一句话
@@ -93,6 +95,8 @@ python ../OctoScript-App-Design-Flow/tools/octo check bundle
 
 - `build/demo-digest.png` — 本地演示快照
 - `bundle/screenshots/01-main.png` — 主屏（首启动空 prefs → "no interests yet"）
+- `bundle/screenshots/02-with-prefs.png` — 3 个兴趣 chip + Refresh 按钮
+- `bundle/screenshots/03-after-refresh.png` — 点 Refresh 后（card-host 无 `octos.*` → 降级到本地 prefs 拼句）
 
 ### 复现命令
 
@@ -150,10 +154,11 @@ memory-digest/
 ## 提交前 TODO
 
 见 [`docs/JOINT-DEMO.md` § 6](../os-memory/docs/JOINT-DEMO.md)。本仓特异：
-- [x] 跑 `octo check` 实测 gate（2026-10-02 PASSED）
-- [ ] 生成 Packet（review.json + 7 问 REVIEW-ANSWERS.md）
+- [x] 跑 `octo check` 实测 gate（2026-10-02 PASSED，2026-10-03 重截后重算 stamp）
+- [x] 生成 Packet（`build/review.json` + `build/REVIEW-ANSWERS.md`）
 - [x] publisher 占位替换（Thneoly）
-- [ ] 补 screenshots 3 张：空/成功/降级
+- [x] 补 screenshots 3 张：空 / with prefs / after-refresh（2026-10-03 重截）
+- [ ] 生成 publisher key（ed25519）+ sign-manifest（人类步骤）
 
 ---
 
