@@ -1,16 +1,33 @@
 {
   "agent": {
-    "profile": "read-only"
+    "max_iterations": null,
+    "profile": "read-only",
+    "token_budget": null,
+    "tools": []
   },
   "capabilities": [
     "storage",
     "octos.turn.start"
   ],
+  "compute": {
+    "instruction_budget": null,
+    "memory_bytes": null
+  },
   "id": "memory-digest",
   "integrity": {
-    "bundle_blake3": "e4afbd17be6af00a89e1652de4c827db6dcb134257ece24dbb44d2c980cf3253"
+    "bundle_blake3": "e4afbd17be6af00a89e1652de4c827db6dcb134257ece24dbb44d2c980cf3253",
+    "signature": {
+      "key_id": "TheOne",
+      "value": "9d8005038c07e860cc2f92d03f3441baabcaa2a167bb7b0690c5469b2bdc02568e5dea8c89b7a288d7997fb3f8302ef933861e8b4d463218237dba9772f95c08"
+    }
   },
   "name": "Memory Digest",
+  "network": {
+    "hosts": []
+  },
   "schema": 1,
+  "storage": {
+    "max_bytes": null
+  },
   "version": "0.1.0"
 }
