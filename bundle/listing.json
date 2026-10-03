@@ -1,13 +1,11 @@
 {
   "schema": 1,
-  "subtitle": "Your morning digest, from what your apps remember",
-  "description": "Opens with a digest of what this app's own assistant remembers about you, built by asking it directly. Without an assistant it falls back honestly to your local interest list, which you edit right here. The reader half of the shared-memory demo.",
+  "subtitle": "What your assistant remembers about you",
+  "description": "A digest of the interests stored in your device's assistant memory, built from octos.session.history. Refresh asks the assistant to summarize in its own words. Without an assistant service the app shows 'Assistant unavailable' and does nothing else. The reader half of a Notes + Digest pair that share one assistant memory.",
   "category": "productivity",
   "keywords": ["digest", "memory", "personalization", "assistant"],
   "screenshots": [
-    "screenshots/01-main.png",
-    "screenshots/02-with-prefs.png",
-    "screenshots/03-after-refresh.png"
+    "screenshots/01-main.png"
   ],
   "icon": "assets/icon.svg",
   "platforms": ["windows"],
@@ -16,7 +14,7 @@
     "support": "https://github.com/Thneoly/memory-digest/issues",
     "privacy_policy_url": "https://github.com/Thneoly/memory-digest/PRIVACY.md"
   },
-  "release_notes": "First version: assistant digest with Refresh, local interest fallback, restart persistence.",
+  "release_notes": "Second version: no local interest cache. The assistant is the source of truth; Refresh asks the assistant, Add writes 'I'm interested in X' to it. 'Assistant unavailable' is the only state on devices without an octos service.",
   "age_rating": "all",
   "license": "Apache-2.0"
 }

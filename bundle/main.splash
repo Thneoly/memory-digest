@@ -1,67 +1,124 @@
-let prefs = []
+let interests = []
+let digest_text = ""
+let digest_source = ""
+let service_ok = false
+let busy = false
+let status_text = "Loading…"
 
-fn load(){
-    if fs.exists("prefs.json") {
-        let v = fs.read("prefs.json").parse_json()
-        if v != nil { prefs = v }
-    }
-    ui.chips.render()
-}
-
-fn save(){ fs.write("prefs.json", prefs.to_json()) }
-
-fn local_digest(){
-    if prefs.len() == 0 { return "Add your interests below, or connect an assistant and press Refresh." }
+fn local_summary(){
+    if interests.len() == 0 { return "No interests recorded yet." }
     let out = "You like: "
-    for i in prefs.len() {
-        out = out + prefs[i]
-        if i < prefs.len() - 1 { out = out + ", " }
+    for i in interests.len() {
+        out = out + interests[i]
+        if i < interests.len() - 1 { out = out + ", " }
     }
     out = out + "."
     return out
 }
 
-fn show_local(reason){
-    ui.digest.set_text(local_digest())
-    ui.source.set_text(reason)
-}
-
-fn refresh(){
-    ui.source.set_text("Asking the assistant…")
-    host.request("octos.turn.start", {text: "In one short paragraph, summarize what you remember about my interests and preferences."}, fn(r){
+fn load(){
+    busy = true
+    digest_text = "Loading…"
+    digest_source = ""
+    ui.digest.set_text(digest_text)
+    ui.source.set_text(digest_source)
+    ui.status.set_text(status_text)
+    host.request("octos.session.history", {}, fn(r){
+        busy = false
         if r.is_ok {
-            ui.digest.set_text("" + r.data.text)
-            ui.source.set_text("From your assistant")
+            interests = []
+            for i in r.data.messages.len() {
+                let m = r.data.messages[i]
+                if m.role != nil {
+                    if ("" + m.role) == "user" {
+                        let raw = ""
+                        if m.text != nil { raw = "" + m.text }
+                        let r1 = raw.strip_prefix("I'm interested in ")
+                        if r1 != nil { interests.push("" + r1) }
+                        let r2 = raw.strip_prefix("I like ")
+                        if r2 != nil { interests.push("" + r2) }
+                    }
+                }
+            }
+            service_ok = true
+            if interests.len() == 0 {
+                digest_text = "No interests recorded yet."
+                digest_source = "Add an interest below, or ask your assistant to remember one."
+            } else {
+                digest_text = local_summary()
+                digest_source = "From your assistant's memory"
+            }
+            status_text = "" + interests.len() + " interests"
         } else {
-            show_local("No assistant on this device — from your local interests")
+            service_ok = false
+            digest_text = "Assistant unavailable on this device"
+            digest_source = "Open this app in Rinx or an OctoSense shell to test"
+            status_text = "Assistant unavailable"
         }
+        ui.digest.set_text(digest_text)
+        ui.source.set_text(digest_source)
+        ui.chips.render()
+        ui.status.set_text(status_text)
     })
 }
 
-fn add_pref(){
+fn refresh(){
+    if busy { return }
+    busy = true
+    digest_source = "Asking the assistant…"
+    ui.source.set_text(digest_source)
+    host.request("octos.turn.start", {text: "In one short paragraph, summarize what you remember about my interests and preferences."}, fn(r){
+        busy = false
+        if r.is_ok {
+            digest_text = "" + r.data.text
+            digest_source = "From your assistant"
+        } else {
+            digest_text = "Assistant unavailable on this device"
+            digest_source = "Open this app in Rinx or an OctoSense shell to test"
+        }
+        ui.digest.set_text(digest_text)
+        ui.source.set_text(digest_source)
+    })
+}
+
+fn add_interest(){
+    if busy { return }
     let text = ui.entry.text()
     if text == "" { return }
-    prefs.push(text)
+    busy = true
     ui.entry.set_text("")
-    save()
-    ui.chips.render()
-    if ui.source.text() == "No assistant on this device — from your local interests" {
-        ui.digest.set_text(local_digest())
-    }
+    status_text = "Sending…"
+    ui.status.set_text(status_text)
+    host.request("octos.turn.start", {text: "I'm interested in " + text}, fn(r){
+        busy = false
+        if r.is_ok {
+            status_text = "Sent ✅"
+            load()
+        } else {
+            status_text = "Assistant unavailable"
+        }
+        ui.status.set_text(status_text)
+    })
 }
 
-fn remove_pref(i){
-    let kept = []
-    for j in prefs.len() { if j != i { kept.push(prefs[j]) } }
-    prefs = kept
-    save()
-    ui.chips.render()
-    if ui.source.text() == "No assistant on this device — from your local interests" {
-        ui.digest.set_text(local_digest())
-    }
+fn forget_interest(text){
+    if busy { return }
+    busy = true
+    status_text = "Asking assistant to forget…"
+    ui.status.set_text(status_text)
+    host.request("octos.turn.start", {text: "Forget this interest: " + text}, fn(r){
+        busy = false
+        if r.is_ok {
+            status_text = "Removed ✅"
+            load()
+        } else {
+            status_text = "Assistant unavailable"
+        }
+        ui.status.set_text(status_text)
+    })
 }
 
-start_timeout(0.05, || { load() refresh() })
+start_timeout(0.05, || load())
 
 let ink = #x1c1c1e
 let secondary = #x8e8e93
@@ -72,13 +129,13 @@ let bg = #xf5fafa
 SolidView{width: Fill height: Fill flow: Down padding: 16 spacing: 12 draw_bg.color: bg
     View{width: Fill height: Fit flow: Down spacing: 2
         Label{text: "✨  Memory Digest" draw_text.color: ink draw_text.text_style: theme.font_bold{font_size: 26}}
-        Label{text: "Your interests, summarized by your assistant." draw_text.color: secondary draw_text.text_style.font_size: 13}
+        Label{text: "What your assistant remembers about you." draw_text.color: secondary draw_text.text_style.font_size: 13}
     }
     RoundedView{width: Fill height: Fit flow: Down spacing: 10 padding: Inset{top: 18 bottom: 18 left: 18 right: 18} draw_bg.color: accent_bg border_radius: 16.0
         Label{text: "YOUR DIGEST" draw_text.color: accent_dark draw_text.text_style.font_size: 10}
-        digest := Label{width: Fill text: "" draw_text.color: ink draw_text.text_style.font_size: 16}
+        digest := Label{width: Fill text: digest_text draw_text.color: ink draw_text.text_style.font_size: 16}
         View{width: Fill height: Fit flow: Right spacing: 8 align: Align{y: 0.5}
-            source := Label{width: Fill text: "" draw_text.color: accent_dark draw_text.text_style.font_size: 11}
+            source := Label{width: Fill text: digest_source draw_text.color: accent_dark draw_text.text_style.font_size: 11}
             ButtonFlat{text: "↻ Refresh" height: 36 padding: Inset{left: 14 right: 14} on_click: || refresh()
                 draw_bg +: {border_radius: 18.0 color: accent color_hover: accent_dark color_down: #x054848 border_size: 0.0}
                 draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}}
@@ -89,25 +146,36 @@ SolidView{width: Fill height: Fill flow: Down padding: 16 spacing: 12 draw_bg.co
         entry := TextInput{width: Fill height: 44 empty_text: "Add an interest"
             draw_bg +: {color: #xffffff color_hover: #xffffff color_focus: accent_bg color_empty: #xffffff border_radius: 12.0}
             draw_text +: {color: ink color_hover: ink color_focus: ink color_empty: secondary color_empty_hover: secondary}}
-        ButtonFlat{text: "Add" height: 44 padding: Inset{left: 20 right: 20} on_click: || add_pref()
+        ButtonFlat{text: "Add" height: 44 padding: Inset{left: 20 right: 20} on_click: || add_interest()
             draw_bg +: {border_radius: 22.0 color: accent color_hover: accent_dark color_down: #x054848 border_size: 0.0}
             draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}}
     }
     chips := ScrollYView{width: Fill height: Fill flow: Down spacing: 8 on_render: || {
-        if prefs.len() == 0 {
-            SolidView{width: Fill height: Fit flow: Down padding: Inset{top: 22 bottom: 22 left: 18 right: 18} align: Align{x: 0.5 y: 0.5} draw_bg.color: #xffffff
-                Label{text: "No interests yet" draw_text.color: secondary draw_text.text_style.font_size: 14}
-                Label{text: "Type above and tap Add to seed your digest." draw_text.color: secondary draw_text.text_style.font_size: 11}
+        if service_ok == true {
+            if interests.len() == 0 {
+                SolidView{width: Fill height: Fit flow: Down padding: Inset{top: 22 bottom: 22 left:18 right:18} align: Align{x: 0.5 y: 0.5} draw_bg.color: #xffffff
+                    Label{text: "No interests yet" draw_text.color: secondary draw_text.text_style.font_size: 14}
+                    Label{text: "Type above and tap Add to record one with your assistant." draw_text.color: secondary draw_text.text_style.font_size: 11}
+                }
             }
-        }
-        for i in prefs.len() {
-            GestureView{width: Fill height: Fit on_tap: |x, y| remove_pref(i)
-                SolidView{width: Fill height: Fit flow: Right spacing: 6 align: Align{y: 0.5} padding: Inset{top: 10 bottom: 10 left: 14 right: 12} draw_bg.color: accent_bg
-                    Label{width: Fill text: prefs[i] draw_text.color: accent_dark draw_text.text_style.font_size: 14}
-                    Label{text: "×" draw_text.color: accent_dark draw_text.text_style.font_size: 15}
+            for i in interests.len() {
+                SolidView{width: Fill height: Fit flow: Right spacing: 6 align: Align{y: 0.5} padding: Inset{top: 10 bottom: 10 left: 14 right: 8} draw_bg.color: accent_bg
+                    Label{width: Fill text: interests[i] draw_text.color: accent_dark draw_text.text_style.font_size: 14}
+                    ButtonFlat{text: "Forget" height: 28 padding: Inset{left: 10 right: 10} on_click: || forget_interest(interests[i])
+                        draw_bg +: {border_radius: 14.0 color: #xffffff color_hover: #xf2f2f7 color_down: #xe5e5ea border_size: 0.0}
+                        draw_text +: {color: accent_dark color_hover: accent color_down: accent}}
                 }
             }
         }
+        if service_ok == false {
+            SolidView{width: Fill height: Fit flow: Down padding: Inset{top: 22 bottom: 22 left:18 right:18} align: Align{x: 0.5 y: 0.5} draw_bg.color: #xffffff
+                Label{text: "Assistant unavailable" draw_text.color: ink draw_text.text_style.font_size: 14}
+                Label{text: "This app reads and writes through the device's assistant. Open it in Rinx or an OctoSense shell to test." draw_text.color: secondary draw_text.text_style.font_size: 11}
+            }
+        }
     }}
-    Label{text: "Tap an interest to remove it. Refresh personalizes from this app's assistant." draw_text.color: secondary draw_text.text_style.font_size: 12}
+    RoundedView{width: Fit height: Fit flow: Right padding: Inset{top: 6 bottom: 6 left: 12 right: 12} draw_bg.color: accent_bg border_radius: 10.0
+        status := Label{text: status_text draw_text.color: accent_dark draw_text.text_style.font_size: 12}
+    }
+    Label{text: "Interests live in your assistant's memory. Memory Notes writes to the same memory." draw_text.color: secondary draw_text.text_style.font_size: 12}
 }
