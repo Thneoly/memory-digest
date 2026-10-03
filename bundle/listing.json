@@ -4,7 +4,11 @@
   "description": "Opens with a digest of what this app's own assistant remembers about you, built by asking it directly. Without an assistant it falls back honestly to your local interest list, which you edit right here. The reader half of the shared-memory demo.",
   "category": "productivity",
   "keywords": ["digest", "memory", "personalization", "assistant"],
-  "screenshots": ["screenshots/01-main.png"],
+  "screenshots": [
+    "screenshots/01-main.png",
+    "screenshots/02-with-prefs.png",
+    "screenshots/03-after-refresh.png"
+  ],
   "icon": "assets/icon.svg",
   "platforms": ["windows"],
   "publisher": {

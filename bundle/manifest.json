@@ -8,7 +8,7 @@
   ],
   "id": "memory-digest",
   "integrity": {
-    "bundle_blake3": "fd9b63bfc2148bd228f5a0164157372a381884f2e95b4904f2c9d82719ecbab5"
+    "bundle_blake3": "e4afbd17be6af00a89e1652de4c827db6dcb134257ece24dbb44d2c980cf3253"
   },
   "name": "Memory Digest",
   "schema": 1,
